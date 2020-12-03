@@ -12,7 +12,20 @@ export const typeDefs = gql`
 	extend type Item {
 		quantity: Int
 	}
+	# Define schema for User
+	# DateTime is in User
+	extend type DateTime {
+		nanoSeconds: Int!
+		seconds: Int!
+	}
 
+	# Define User
+	extend type User {
+		id: ID!
+		displayName: String!
+		email: String!
+		createdAt: DateTime!
+	}
 	# extends it from the back end
 	extend type Mutation {
 		ToggleCartHidden: Boolean!
@@ -44,6 +57,12 @@ const GET_CART_ITEMS = gql`
 const GET_CART_TOTAL = gql`
 	{
 		cartTotal @client
+	}
+`;
+
+const GET_CURRENT_USER = gql`
+	{
+		currentUser @client
 	}
 `;
 
@@ -87,6 +106,7 @@ export const resolvers = {
 
 			return newCartItems;
 		},
+
 		clearItemFromCart: (_root, { item }, { cache }) => {
 			const { cartItems } = cache.readQuery({
 				query: GET_CART_ITEMS,
@@ -97,6 +117,15 @@ export const resolvers = {
 			updateRelatedQueries(cache, newCartItems);
 
 			return newCartItems;
+		},
+
+		setCurrentUser: (_root, { user }, { cache }) => {
+			cache.writeQuery({
+				query: GET_CURRENT_USER,
+				data: { currentUser: user },
+			});
+
+			return user;
 		},
 	},
 };
